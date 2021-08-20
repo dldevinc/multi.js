@@ -1,4 +1,5 @@
 .multi-wrapper {
+  overflow: hidden;
   border: 1px solid #ccc;
   border-radius: 3px;
   width: 100%;
