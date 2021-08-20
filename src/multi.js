@@ -5,23 +5,24 @@
  * Author: Fabian Lindfors
  * License: MIT
  */
-var multi = (function() {
+var multi = (function () {
   var disabled_limit = false; // This will prevent to reset the "disabled" because of the limit at every click
 
   // Helper function to trigger an event on an element
-  var trigger_event = function(type, el) {
+  var trigger_event = function (type, el) {
     var e = document.createEvent("HTMLEvents");
     e.initEvent(type, false, true);
     el.dispatchEvent(e);
   };
 
-   // Check if there is a limit and if is reached
-   var check_limit = function (select, settings) {
+  // Check if there is a limit and if is reached
+  var check_limit = function (select, settings) {
+    var i, opt;
     var limit = settings.limit;
     if (limit > -1) {
       // Count current selected
       var selected_count = 0;
-      for (var i = 0; i < select.options.length; i++) {
+      for (i = 0; i < select.options.length; i++) {
         if (select.options[i].selected) {
           selected_count++;
         }
@@ -29,7 +30,7 @@ var multi = (function() {
 
       // Reached the limit
       if (selected_count === limit) {
-        this.disabled_limit = true;
+        disabled_limit = true;
 
         // Trigger the function (if there is)
         if (typeof settings.limit_reached === "function") {
@@ -37,30 +38,30 @@ var multi = (function() {
         }
 
         // Disable all non-selected option
-        for (var i = 0; i < select.options.length; i++) {
-          var opt = select.options[i];
+        for (i = 0; i < select.options.length; i++) {
+          opt = select.options[i];
 
           if (!opt.selected) {
             opt.setAttribute("disabled", true);
           }
         }
-      } else if (this.disabled_limit) {
+      } else if (disabled_limit) {
         // Enable options (only if they weren't disabled on init)
-        for (var i = 0; i < select.options.length; i++) {
-          var opt = select.options[i];
+        for (i = 0; i < select.options.length; i++) {
+          opt = select.options[i];
 
           if (opt.getAttribute("data-origin-disabled") === "false") {
             opt.removeAttribute("disabled");
           }
         }
 
-        this.disabled_limit = false;
+        disabled_limit = false;
       }
     }
   };
 
   // Toggles the target option on the select
-  var toggle_option = function(select, event, settings) {
+  var toggle_option = function (select, event, settings) {
     var option = select.options[event.target.getAttribute("multi-index")];
 
     if (option.disabled) {
@@ -75,7 +76,9 @@ var multi = (function() {
   };
 
   // Refreshes an already constructed multi.js instance
-  var refresh_select = function(select, settings) {
+  var refresh_select = function (select, settings) {
+    var i;
+
     // Clear columns
     select.wrapper.selected.innerHTML = "";
     select.wrapper.non_selected.innerHTML = "";
@@ -105,7 +108,7 @@ var multi = (function() {
     var current_optgroup = null;
 
     // Loop over select options and add to the non-selected and selected columns
-    for (var i = 0; i < select.options.length; i++) {
+    for (i = 0; i < select.options.length; i++) {
       var option = select.options[i];
 
       var value = option.value;
@@ -132,8 +135,8 @@ var multi = (function() {
 
       // Create group if entering a new optgroup
       if (
-        option.parentNode.nodeName == "OPTGROUP" &&
-        option.parentNode != current_optgroup
+        option.parentNode.nodeName === "OPTGROUP" &&
+        option.parentNode !== current_optgroup
       ) {
         current_optgroup = option.parentNode;
         item_group = document.createElement("div");
@@ -150,7 +153,7 @@ var multi = (function() {
       }
 
       // Clear group if not inside optgroup
-      if (option.parentNode == select) {
+      if (option.parentNode === select) {
         item_group = null;
         current_optgroup = null;
       }
@@ -171,18 +174,18 @@ var multi = (function() {
 
     // Hide empty optgroups
     if (settings.hide_empty_groups) {
-      var optgroups = document.getElementsByClassName('item-group');
-      for (var i = 0; i < optgroups.length; i++) {
+      var optgroups = document.getElementsByClassName("item-group");
+      for (i = 0; i < optgroups.length; i++) {
         // Hide optgroup if optgroup only contains a group label
         if (optgroups[i].childElementCount < 2) {
-          optgroups[i].style.display = 'none';
+          optgroups[i].style.display = "none";
         }
       }
     }
   };
 
   // Intializes and constructs an multi.js instance
-  var init = function(select, settings) {
+  var init = function (select, settings) {
     /**
      * Set up settings (optional parameter) and its default values
      *
@@ -226,7 +229,7 @@ var multi = (function() {
     }
 
     // Make sure element is select and multiple is enabled
-    if (select.nodeName != "SELECT" || !select.multiple) {
+    if (select.nodeName !== "SELECT" || !select.multiple) {
       return;
     }
 
@@ -246,7 +249,7 @@ var multi = (function() {
       search.setAttribute("placeholder", settings.search_placeholder);
       search.setAttribute("title", settings.search_placeholder);
 
-      search.addEventListener("input", function() {
+      search.addEventListener("input", function () {
         refresh_select(select, settings);
       });
 
@@ -262,14 +265,14 @@ var multi = (function() {
     selected.className = "selected-wrapper";
 
     // Add click handler to toggle the selected status
-    wrapper.addEventListener("click", function(event) {
+    wrapper.addEventListener("click", function (event) {
       if (event.target.getAttribute("multi-index")) {
         toggle_option(select, event, settings);
       }
     });
 
     // Add keyboard handler to toggle the selected status
-    wrapper.addEventListener("keypress", function(event) {
+    wrapper.addEventListener("keypress", function (event) {
       var is_action_key = event.keyCode === 32 || event.keyCode === 13;
       var is_option = event.target.getAttribute("multi-index");
 
@@ -304,7 +307,7 @@ var multi = (function() {
     refresh_select(select, settings);
 
     // Refresh selector when select values change
-    select.addEventListener("change", function() {
+    select.addEventListener("change", function () {
       refresh_select(select, settings);
     });
   };
@@ -314,11 +317,11 @@ var multi = (function() {
 
 // Add jQuery wrapper if jQuery is present
 if (typeof jQuery !== "undefined") {
-  (function($) {
-    $.fn.multi = function(settings) {
+  (function ($) {
+    $.fn.multi = function (settings) {
       settings = typeof settings !== "undefined" ? settings : {};
 
-      return this.each(function() {
+      return this.each(function () {
         var $select = $(this);
 
         multi($select.get(0), settings);
