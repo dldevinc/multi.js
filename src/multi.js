@@ -75,6 +75,21 @@ var multi = (function () {
     trigger_event("change", select);
   };
 
+  // Creates a new group for optgroup
+  var create_item_group = function (optgroup) {
+    var item_group = document.createElement("div");
+    item_group.className = "item-group";
+
+    if (optgroup.label) {
+      var groupLabel = document.createElement("span");
+      groupLabel.innerHTML = optgroup.label;
+      groupLabel.className = "group-label";
+      item_group.appendChild(groupLabel);
+    }
+
+    return item_group;
+  };
+
   // Refreshes an already constructed multi.js instance
   var refresh_select = function (select, settings) {
     var i;
@@ -106,6 +121,8 @@ var multi = (function () {
     // Current group
     var item_group = null;
     var current_optgroup = null;
+    var selected_item_group = null;
+    var current_item_group = null;
 
     // Loop over select options and add to the non-selected and selected columns
     for (i = 0; i < select.options.length; i++) {
@@ -126,11 +143,10 @@ var multi = (function () {
         row.className += " disabled";
       }
 
-      // Add row to selected column if option selected
-      if (option.selected) {
-        row.className += " selected";
-        var clone = row.cloneNode(true);
-        select.wrapper.selected.appendChild(clone);
+      // Clear group if not inside optgroup
+      if (option.parentNode === select) {
+        item_group = null;
+        current_optgroup = null;
       }
 
       // Create group if entering a new optgroup
@@ -139,17 +155,31 @@ var multi = (function () {
         option.parentNode !== current_optgroup
       ) {
         current_optgroup = option.parentNode;
-        item_group = document.createElement("div");
-        item_group.className = "item-group";
+        item_group = create_item_group(current_optgroup);
+        select.wrapper.non_selected.appendChild(item_group);
+      }
 
-        if (option.parentNode.label) {
-          var groupLabel = document.createElement("span");
-          groupLabel.innerHTML = option.parentNode.label;
-          groupLabel.className = "group-label";
-          item_group.appendChild(groupLabel);
+      // Add row to selected column if option selected
+      if (option.selected) {
+        row.className += " selected";
+        var clone = row.cloneNode(true);
+
+        if (item_group) {
+          if (item_group !== current_item_group) {
+            current_item_group = item_group;
+            selected_item_group = create_item_group(current_optgroup);
+            select.wrapper.selected.appendChild(selected_item_group);
+          }
+        } else {
+          current_item_group = null;
+          selected_item_group = null;
         }
 
-        select.wrapper.non_selected.appendChild(item_group);
+        if (selected_item_group) {
+          selected_item_group.appendChild(clone);
+        } else {
+          select.wrapper.selected.appendChild(clone);
+        }
       }
 
       // Clear group if not inside optgroup
