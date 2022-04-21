@@ -276,6 +276,7 @@ var multi = (function () {
       var search = document.createElement("input");
       search.className = "search-input";
       search.type = "text";
+      search.setAttribute("autocomplete", "off");
       search.setAttribute("placeholder", settings.search_placeholder);
       search.setAttribute("title", settings.search_placeholder);
 
